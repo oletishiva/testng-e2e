@@ -16,6 +16,32 @@ jobs:
       - run:
           name: Build and Test
           command: mvn clean test
+      - run:
+          name: Send Slack Notification
+          command: |
+            if [ "${CIRCLE_JOB_STATUS}" = "success" ]; then
+              STATUS_MESSAGE="Build and Tests Passed! 🎉"
+              COLOR="good"
+            else
+              STATUS_MESSAGE="Build or Tests Failed! ❌"
+              COLOR="danger"
+            fi
+            
+            curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"attachments\": [
+                {
+                  \"fallback\": \"CircleCI Build Notification\",
+                  \"color\": \"$COLOR\",
+                  \"text\": \"$STATUS_MESSAGE\",
+                  \"fields\": [
+                    { \"title\": \"Project\", \"value\": \"$CIRCLE_PROJECT_REPONAME\", \"short\": true },
+                    { \"title\": \"Branch\", \"value\": \"$CIRCLE_BRANCH\", \"short\": true },
+                    { \"title\": \"Build URL\", \"value\": \"$CIRCLE_BUILD_URL\", \"short\": false }
+                  ]
+                }
+              ]
+            }" $SLACK_WEBHOOK_URL
 
 
 workflows:
