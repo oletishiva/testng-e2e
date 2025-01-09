@@ -1,0 +1,20 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: circleci/openjdk:11
+    steps:
+      - checkout
+      - run:
+          name: Install Maven
+          command: sudo apt-get update && sudo apt-get install -y maven
+      - run:
+          name: Run Tests
+          command: mvn test
+
+workflows:
+  version: 2
+  test_workflow:
+    jobs:
+      - test
