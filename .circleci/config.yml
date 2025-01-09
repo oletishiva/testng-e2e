@@ -1,20 +1,34 @@
 version: 2.1
 
 jobs:
-  test:
+  build-and-test:
     docker:
-      - image: circleci/openjdk:11
+      - image: circleci/openjdk:11  # Use a Java 11 image with JDK pre-installed
+    environment:
+      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64  # Ensure JAVA_HOME is set
+      MAVEN_OPTS: "-Xmx1024m"  # Optional: Set Maven memory options
+
     steps:
-      - checkout
+      - checkout  # Check out the code from your GitHub repository
+
       - run:
-          name: Install Maven
-          command: sudo apt-get update && sudo apt-get install -y maven
+          name: Update and Install Dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y maven ca-certificates-java
+
       - run:
-          name: Run Tests
-          command: mvn test
+          name: Verify Java and Maven Installation
+          command: |
+            java -version
+            mvn -version
+
+      - run:
+          name: Build and Test with Maven
+          command: mvn clean test
 
 workflows:
   version: 2
-  test_workflow:
+  build-and-test-workflow:
     jobs:
-      - test
+      - build-and-test
