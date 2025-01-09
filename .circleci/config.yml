@@ -19,7 +19,7 @@ jobs:
       - run:
           name: Send Slack Notification
           command: |
-            if [ "${CIRCLE_JOB_STATUS}" = "success" ]; then
+            if [ "${CIRCLE_JOB_STATUS}" = "Success" ]; then
               STATUS_MESSAGE="Build and Tests Passed! 🎉"
               COLOR="good"
             else
