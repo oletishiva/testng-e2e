@@ -13,6 +13,9 @@ jobs:
           command: |
             java -version
             mvn -version
+      - run:
+          name: Build and Test
+          command: mvn clean test
 
       - run:
           name: Fix Java Certificates
