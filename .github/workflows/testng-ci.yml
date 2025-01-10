@@ -3,10 +3,10 @@ name: TestNG CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-test:
@@ -26,19 +26,30 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y maven
 
       - name: Run TestNG Tests
-        run: mvn test
+        run: mvn clean test
 
-  notify:
+  notify-success:
     needs: build-and-test
     runs-on: ubuntu-latest
+    if: success()  # Runs only if the previous job succeeds
 
     steps:
-      - name: Send Slack Notification
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          payload: |
-            {
-              "text": "TestNG CI/CD Pipeline completed. Check logs: ${{ github.run_url }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Send Slack Notification on Success
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{
+            \"text\": \"✅ *Build Passed!* \nRepository: *${{ github.repository }}* \nBranch: *${{ github.ref_name }}* \nCommit: *${{ github.sha }}* \nView the build: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+          }" ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  notify-failure:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: failure()  # Runs only if the previous job fails
+
+    steps:
+      - name: Send Slack Notification on Failure
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{
+            \"text\": \"❌ *Build Failed!* \nRepository: *${{ github.repository }}* \nBranch: *${{ github.ref_name }}* \nCommit: *${{ github.sha }}* \nView the build: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+          }" ${{ secrets.SLACK_WEBHOOK_URL }}
